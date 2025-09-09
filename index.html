@@ -56,15 +56,26 @@
         try {
           const factionName = "HIP 75964 DYNASTY";
           const factionRes = await fetch(
-            `https://elitebgs.app/api/ebgs/v5/factions?name=${encodeURIComponent(factionName)}`,
+            `https://elitebgs.app/api/ebgs/v5/factions?factionName=${encodeURIComponent(factionName)}`,
           );
           if (!factionRes.ok) throw new Error("Chyba API");
           const factionData = await factionRes.json();
-          const presence =
-            (factionData.docs &&
-              factionData.docs[0] &&
-              factionData.docs[0].faction_presence) ||
-            [];
+          console.log("Faction response", factionData);
+          let presence = [];
+          if (factionData.docs && factionData.docs[0]) {
+            presence =
+              factionData.docs[0].faction_presence ||
+              factionData.docs[0].presence ||
+              [];
+            if (!Array.isArray(presence)) {
+              alert("Neočekávaný formát odpovědi API.");
+              console.error("Unexpected API response", factionData);
+              presence = [];
+            }
+          } else {
+            alert("Neočekávaný formát odpovědi API.");
+            console.error("Unexpected API response", factionData);
+          }
 
           if (presence.length === 0) {
             content.textContent = "Frakce není přítomna v žádném systému.";
