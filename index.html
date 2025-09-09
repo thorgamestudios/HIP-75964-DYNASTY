@@ -208,6 +208,14 @@
         }
       }
 
+      function stripEnumPrefix(value) {
+        if (typeof value !== "string") return value;
+        return value
+          .replace(/^system_security_/, "")
+          .replace(/^government_/, "")
+          .replace(/^economy_/, "");
+      }
+
       function renderSystems() {
         const sortBy = lastSortBy;
         const sorted = [...factionPresence];
@@ -447,15 +455,19 @@
           const wrapper = document.createElement("div");
           const tbl = document.createElement("table");
           tbl.className = "detail-table";
+          const security = stripEnumPrefix(system.security);
+          const government = stripEnumPrefix(system.government);
+          const primaryEconomy = stripEnumPrefix(system.primary_economy);
+          const secondaryEconomy = stripEnumPrefix(system.secondary_economy);
           tbl.innerHTML = `
             <tr><th>Název systému</th><td>${system.name}</td></tr>
             <tr><th>Allegiance</th><td>${system.allegiance || "—"}</td></tr>
             <tr><th>Řídící frakce</th><td>${system.controlling_minor_faction || "—"}</td></tr>
             <tr><th>Stav systému</th><td>${system.state || "—"}</td></tr>
-            <tr><th>Bezpečnost</th><td>${system.security || "—"}</td></tr>
-            <tr><th>Vláda</th><td>${system.government || "—"}</td></tr>
-            <tr><th>Primární ekonomika</th><td>${system.primary_economy || "—"}</td></tr>
-            <tr><th>Sekundární ekonomika</th><td>${system.secondary_economy || "—"}</td></tr>
+            <tr><th>Bezpečnost</th><td>${security || "—"}</td></tr>
+            <tr><th>Vláda</th><td>${government || "—"}</td></tr>
+            <tr><th>Primární ekonomika</th><td>${primaryEconomy || "—"}</td></tr>
+            <tr><th>Sekundární ekonomika</th><td>${secondaryEconomy || "—"}</td></tr>
             <tr><th>Populace</th><td>${(system.population || 0).toLocaleString()}</td></tr>
             <tr><th>Poslední aktualizace dat</th><td>${system.updated_at ? new Date(system.updated_at).toLocaleString() : "—"}</td></tr>
           `;
