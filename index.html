@@ -127,6 +127,15 @@
         height: 180px;
         margin-bottom: 0.5rem;
       }
+      .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .detail-table th,
+      .detail-table td {
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -377,10 +386,55 @@
             content.textContent = "Systém nenalezen.";
             return;
           }
-          const pre = document.createElement("pre");
-          pre.textContent = JSON.stringify(system, null, 2);
+          const wrapper = document.createElement("div");
+          const tbl = document.createElement("table");
+          tbl.className = "detail-table";
+          tbl.innerHTML = `
+            <tr><th>Název systému</th><td>${system.name}</td></tr>
+            <tr><th>Allegiance</th><td>${system.allegiance || "—"}</td></tr>
+            <tr><th>Řídící frakce</th><td>${system.controlling_minor_faction || "—"}</td></tr>
+            <tr><th>Stav systému</th><td>${system.state || "—"}</td></tr>
+            <tr><th>Bezpečnost</th><td>${system.security || "—"}</td></tr>
+            <tr><th>Vláda</th><td>${system.government || "—"}</td></tr>
+            <tr><th>Primární ekonomika</th><td>${system.primary_economy || "—"}</td></tr>
+            <tr><th>Sekundární ekonomika</th><td>${system.secondary_economy || "—"}</td></tr>
+            <tr><th>Populace</th><td>${(system.population || 0).toLocaleString()}</td></tr>
+            <tr><th>Poslední aktualizace dat</th><td>${system.updated_at ? new Date(system.updated_at).toLocaleString() : "—"}</td></tr>
+          `;
+          wrapper.appendChild(tbl);
+
+          if (system.conflicts && system.conflicts.length) {
+            const confTitle = document.createElement("h3");
+            confTitle.textContent = "Konflikty";
+            wrapper.appendChild(confTitle);
+            const confList = document.createElement("ul");
+            system.conflicts.forEach((c) => {
+              const li = document.createElement("li");
+              const f1 = c.faction1 && c.faction1.name ? c.faction1.name : "";
+              const f2 = c.faction2 && c.faction2.name ? c.faction2.name : "";
+              const status = c.status || c.type || "";
+              li.textContent = `${f1} vs ${f2} (${status})`;
+              confList.appendChild(li);
+            });
+            wrapper.appendChild(confList);
+          }
+
+          if (system.factions && system.factions.length) {
+            const facTitle = document.createElement("h3");
+            facTitle.textContent = "Frakce v systému";
+            wrapper.appendChild(facTitle);
+            const facList = document.createElement("ul");
+            system.factions.forEach((f) => {
+              const li = document.createElement("li");
+              const inf = Math.round((f.influence || 0) * 100);
+              li.textContent = `${f.name} (${inf}%)`;
+              facList.appendChild(li);
+            });
+            wrapper.appendChild(facList);
+          }
+
           content.innerHTML = "";
-          content.appendChild(pre);
+          content.appendChild(wrapper);
         } catch (err) {
           console.error(err);
           content.textContent = "Nepodařilo se načíst data systému.";
