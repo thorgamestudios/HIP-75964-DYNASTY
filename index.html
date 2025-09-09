@@ -82,7 +82,7 @@
             return;
           }
 
-          const systems = await Promise.all(
+          const settled = await Promise.allSettled(
             presence.map(async (p) => {
               const sysRes = await fetch(
                 `https://elitebgs.app/api/ebgs/v5/systems?name=${encodeURIComponent(p.system_name)}`,
@@ -92,6 +92,10 @@
               return sysData.docs[0];
             }),
           );
+
+          const systems = settled
+            .filter((r) => r.status === "fulfilled" && r.value)
+            .map((r) => r.value);
 
           content.innerHTML = "";
           systems.forEach((sys) => {
