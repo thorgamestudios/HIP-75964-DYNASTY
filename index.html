@@ -139,10 +139,16 @@
               },
             });
           });
-        } catch (err) {
-          console.error(err);
-          content.textContent = "Nepodařilo se načíst data.";
-        }
+          } catch (err) {
+            console.error(err);
+            const details =
+              err?.message || (err?.status ? `HTTP ${err.status}` : "");
+            const hint = " Zkontrolujte název systému nebo síťové připojení.";
+            content.textContent =
+              `Nepodařilo se načíst data${
+                details ? `: ${details}` : ""
+              }.${hint}`;
+          }
       }
 
       overviewBtn.addEventListener("click", loadOverview);
