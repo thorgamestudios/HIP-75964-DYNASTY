@@ -34,6 +34,47 @@
         background-color: #ddd;
         cursor: pointer;
       }
+
+      /* Overview list */
+      .system-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+      }
+      .system-button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 260px;
+        padding: 1rem;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        font-size: 1.1rem;
+      }
+      .system-name {
+        flex-grow: 1;
+      }
+      .inf-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: bold;
+      }
+      .inf-circle.low {
+        background-color: #e74c3c;
+      }
+      .inf-circle.medium {
+        background-color: #f1c40f;
+      }
+      .inf-circle.high {
+        background-color: #2ecc71;
+      }
     </style>
   </head>
   <body>
@@ -64,12 +105,28 @@
             return;
           }
 
-          const list = document.createElement("ul");
+          const list = document.createElement("div");
+          list.className = "system-list";
+
           faction.faction_presence.forEach((p) => {
-            const li = document.createElement("li");
+            const btn = document.createElement("button");
+            btn.className = "system-button";
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "system-name";
+            nameSpan.textContent = p.system_name;
+
             const inf = Math.round(p.influence * 100);
-            li.textContent = `${p.system_name} — ${inf}% — ${p.faction_state}`;
-            list.appendChild(li);
+            const circle = document.createElement("span");
+            circle.className = "inf-circle";
+            circle.textContent = `${inf}%`;
+            if (inf <= 30) circle.classList.add("low");
+            else if (inf <= 50) circle.classList.add("medium");
+            else circle.classList.add("high");
+
+            btn.appendChild(nameSpan);
+            btn.appendChild(circle);
+            list.appendChild(btn);
           });
 
           content.innerHTML = "";
