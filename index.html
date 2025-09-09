@@ -88,7 +88,31 @@
       .inf-circle.high {
         background-color: #2ecc71;
       }
+
+      #stats {
+        background-color: #233;
+        color: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        max-width: 600px;
+      }
+      #stats table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #stats th,
+      #stats td {
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+      }
+      #stats canvas {
+        width: 100%;
+        height: 180px;
+        margin-bottom: 0.5rem;
+      }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <header>
@@ -197,11 +221,77 @@
         }
       }
 
+      async function loadFactionStats(container) {
+        container.innerHTML = "<p>Načítání statistik...</p>";
+        try {
+          const res = await fetch(
+            "https://elitebgs.app/api/ebgs/v5/factions?name=HIP%2076954%20DYNASTY",
+          );
+          if (!res.ok) throw new Error("Chyba API");
+          const data = await res.json();
+          const faction = data.docs && data.docs[0];
+          if (!faction || !Array.isArray(faction.faction_presence)) {
+            container.textContent = "Statistiky nejsou k dispozici.";
+            return;
+          }
+          const pres = faction.faction_presence;
+          const totalPop = pres.reduce((s, p) => s + (p.population || 0), 0);
+          const weightedPop = pres.reduce(
+            (s, p) => s + (p.population || 0) * (p.influence || 0),
+            0,
+          );
+          const avgInf = pres.length
+            ? pres.reduce((s, p) => s + (p.influence || 0), 0) / pres.length
+            : 0;
+
+          container.innerHTML = "";
+          const canvas = document.createElement("canvas");
+          container.appendChild(canvas);
+
+          new Chart(canvas.getContext("2d"), {
+            type: "line",
+            data: {
+              labels: pres.map((p) => p.system_name),
+              datasets: [
+                {
+                  label: "Populace",
+                  data: pres.map((p) => p.population || 0),
+                  borderColor: "#f1c40f",
+                  backgroundColor: "rgba(241,196,15,0.2)",
+                  tension: 0.3,
+                },
+              ],
+            },
+            options: {
+              scales: { x: { display: false } },
+              plugins: { legend: { display: false } },
+            },
+          });
+
+          const tbl = document.createElement("table");
+          tbl.innerHTML = `
+            <tr><th>Populace</th><td>${totalPop.toLocaleString()}</td></tr>
+            <tr><th>Populace podle vlivu</th><td>${Math.round(weightedPop).toLocaleString()}</td></tr>
+            <tr><th>Systémy</th><td>${pres.length}</td></tr>
+            <tr><th>Průměrný vliv</th><td>${(avgInf * 100).toFixed(2)}%</td></tr>
+          `;
+          container.appendChild(tbl);
+        } catch (err) {
+          console.error(err);
+          container.textContent = "Nepodařilo se načíst statistiky.";
+        }
+      }
+
       function loadHome() {
         const wrapper = document.createElement("div");
         const intro = document.createElement("p");
         intro.textContent = "Vítejte na hlavní stránce.";
         wrapper.appendChild(intro);
+
+        const statsDiv = document.createElement("div");
+        statsDiv.id = "stats";
+        wrapper.appendChild(statsDiv);
+        loadFactionStats(statsDiv);
 
         if (homeSystems.length) {
           const list = document.createElement("div");
