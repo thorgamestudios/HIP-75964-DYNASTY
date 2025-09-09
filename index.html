@@ -116,6 +116,12 @@
       .home-table th {
         background-color: #000;
       }
+      .home-table th:nth-child(3),
+      .home-table td:nth-child(3),
+      .home-table th:nth-child(6),
+      .home-table td:nth-child(6) {
+        width: 150px;
+      }
       .priority-star {
         color: #ffff00;
         font-size: 1.5rem;
@@ -511,7 +517,7 @@
             progContainer.className = "progress-container";
             const progBar = document.createElement("div");
             progBar.className = "progress-bar";
-            progBar.style.width = `${inf}%`;
+            progBar.style.width = "0%";
             progContainer.appendChild(progBar);
             supportTd.appendChild(progContainer);
 
