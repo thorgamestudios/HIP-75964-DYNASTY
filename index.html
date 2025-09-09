@@ -11,7 +11,7 @@
         color: #fff;
       }
       header {
-        background-color: #333;
+        background-color: #000;
         color: #fff;
         display: flex;
         justify-content: center;
@@ -24,9 +24,9 @@
       }
       aside {
         width: 352px; /* reduced by 20% */
-        background-color: #f4f4f4;
+        background-color: #2b0030;
         padding: 1rem;
-        color: #000;
+        color: #fff;
       }
       main {
         flex-grow: 1;
@@ -38,10 +38,16 @@
       .nav-button {
         width: 100%;
         padding: 0.5rem;
+        margin-bottom: 0.5rem;
         border: 2px solid transparent;
-        background-color: #ddd;
+        border-radius: 8px;
+        background-color: #000;
+        color: #fff;
         cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+        transition:
+          transform 0.1s,
+          box-shadow 0.1s,
+          border-color 0.1s;
       }
       .nav-button:hover {
         border-color: #ff00ff;
@@ -69,7 +75,7 @@
         background-color: #000;
       }
       .system-table td:first-child {
-        background-color: #ffc0cb;
+        background-color: #000;
       }
       #sortSelect {
         color: #000;
@@ -102,7 +108,10 @@
         border-radius: 4px;
         cursor: pointer;
         font-weight: bold;
-        transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+        transition:
+          transform 0.1s,
+          box-shadow 0.1s,
+          border-color 0.1s;
       }
       .add-btn:hover {
         border-color: #ff00ff;
@@ -522,5 +531,5 @@
         loadHome();
       }
     </script>
-    </body>
+  </body>
 </html>
