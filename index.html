@@ -246,10 +246,7 @@
           nameSpan.className = "system-name";
           nameSpan.textContent = p.system_name;
           nameSpan.addEventListener("click", () => {
-            window.open(
-              `index.html?system=${encodeURIComponent(p.system_name)}`,
-              "_blank",
-            );
+            window.location.href = `index.html?system=${encodeURIComponent(p.system_name)}`;
           });
           nameCell.appendChild(nameSpan);
 
@@ -379,10 +376,7 @@
             nameSpan.className = "system-name";
             nameSpan.textContent = p.system_name;
             nameSpan.addEventListener("click", () => {
-              window.open(
-                `index.html?system=${encodeURIComponent(p.system_name)}`,
-                "_blank",
-              );
+              window.location.href = `index.html?system=${encodeURIComponent(p.system_name)}`;
             });
 
             const inf = Math.round((p.influence || 0) * 100);
