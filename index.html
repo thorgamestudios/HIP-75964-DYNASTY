@@ -21,7 +21,7 @@
         min-height: calc(100vh - 72px); /* subtract header height approx */
       }
       aside {
-        width: 440px;
+        width: 352px; /* reduced by 20% */
         background-color: #f4f4f4;
         padding: 1rem;
       }
@@ -32,9 +32,17 @@
       .nav-button {
         width: 100%;
         padding: 0.5rem;
-        border: none;
+        border: 2px solid transparent;
         background-color: #ddd;
         cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+      }
+      .nav-button:hover {
+        border-color: #ff00ff;
+        box-shadow: 0 0 4px #ff00ff;
+      }
+      .nav-button.clicked {
+        transform: scale(0.95);
       }
 
       /* Overview list */
@@ -60,10 +68,18 @@
         height: 24px;
         background-color: #2ecc71;
         color: #fff;
-        border: none;
+        border: 2px solid transparent;
         border-radius: 4px;
         cursor: pointer;
         font-weight: bold;
+        transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+      }
+      .add-btn:hover {
+        border-color: #ff00ff;
+        box-shadow: 0 0 4px #ff00ff;
+      }
+      .add-btn.clicked {
+        transform: scale(0.95);
       }
       .system-name {
         flex-grow: 1;
@@ -139,6 +155,17 @@
       let factionPresence = [];
       let homeSystems = [];
 
+      function addAnimatedClick(el, handler) {
+        el.addEventListener("click", (e) => {
+          e.preventDefault();
+          el.classList.add("clicked");
+          setTimeout(() => {
+            el.classList.remove("clicked");
+            handler(e);
+          }, 150);
+        });
+      }
+
       function addSystemToHome(p) {
         if (!homeSystems.find((s) => s.system_name === p.system_name)) {
           homeSystems.push(p);
@@ -166,7 +193,7 @@
           const addBtn = document.createElement("button");
           addBtn.className = "add-btn";
           addBtn.textContent = "+";
-          addBtn.addEventListener("click", (e) => {
+          addAnimatedClick(addBtn, (e) => {
             e.stopPropagation();
             addSystemToHome(p);
           });
@@ -360,8 +387,8 @@
         }
       }
 
-      homeBtn.addEventListener("click", loadHome);
-      overviewBtn.addEventListener("click", loadOverview);
+      addAnimatedClick(homeBtn, loadHome);
+      addAnimatedClick(overviewBtn, loadOverview);
       sortSelect.addEventListener("change", () => {
         if (factionPresence.length) renderSystems();
       });
