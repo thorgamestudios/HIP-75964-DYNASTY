@@ -55,13 +55,21 @@
       .system-table {
         border: 2px solid #ff00ff;
         border-collapse: collapse;
-        margin: 1rem auto;
+        margin: 1rem 0;
         background-color: #000;
+        align-self: flex-start;
       }
       .system-table th,
       .system-table td {
         padding: 0.5rem;
         border: 1px solid #ffff00;
+        text-align: left;
+      }
+      .system-table th {
+        background-color: #000;
+      }
+      .system-table td:first-child {
+        background-color: #ffc0cb;
       }
       #sortSelect {
         color: #000;
@@ -180,6 +188,8 @@
 
       let factionPresence = [];
       let homeSystems = [];
+      let lastSortBy = "name";
+      let sortAscending = true;
 
       function addAnimatedClick(el, handler) {
         el.addEventListener("click", (e) => {
@@ -199,15 +209,21 @@
       }
 
       function renderSystems() {
-        const sortBy = sortSelect ? sortSelect.value : "population";
+        const sortBy = lastSortBy;
         const sorted = [...factionPresence];
-        if (sortBy === "population") {
-          sorted.sort(
-            (a, b) => (b.system_population || b.population || 0) - (a.system_population || a.population || 0),
-          );
-        } else if (sortBy === "percentage" || sortBy === "influence") {
-          sorted.sort((a, b) => (b.influence || 0) - (a.influence || 0));
-        }
+        sorted.sort((a, b) => {
+          let val = 0;
+          if (sortBy === "population") {
+            val =
+              (a.system_population || a.population || 0) -
+              (b.system_population || b.population || 0);
+          } else if (sortBy === "influence") {
+            val = (a.influence || 0) - (b.influence || 0);
+          } else {
+            val = (a.system_name || "").localeCompare(b.system_name || "");
+          }
+          return sortAscending ? val : -val;
+        });
 
         const tbl = document.createElement("table");
         tbl.className = "system-table";
@@ -218,12 +234,22 @@
         sortSelect = document.createElement("select");
         sortSelect.id = "sortSelect";
         sortSelect.innerHTML = `
-          <option value="population">Populace</option>
-          <option value="percentage">Procenta</option>
+          <option value="name">Název</option>
           <option value="influence">Vliv</option>
+          <option value="population">Populace</option>
         `;
         sortSelect.value = sortBy;
-        sortSelect.addEventListener("change", renderSystems);
+        sortSelect.addEventListener("change", () => {
+          lastSortBy = sortSelect.value;
+          sortAscending = true;
+          renderSystems();
+        });
+        sortSelect.addEventListener("click", () => {
+          if (sortSelect.value === lastSortBy) {
+            sortAscending = !sortAscending;
+            renderSystems();
+          }
+        });
         headerCell.appendChild(sortSelect);
         headerRow.appendChild(headerCell);
         tbl.appendChild(headerRow);
