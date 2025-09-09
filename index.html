@@ -11,7 +11,9 @@
       header {
         background-color: #333;
         color: #fff;
-        text-align: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 1rem;
       }
       .layout {
@@ -19,7 +21,7 @@
         min-height: calc(100vh - 72px); /* subtract header height approx */
       }
       aside {
-        width: 200px;
+        width: 440px;
         background-color: #f4f4f4;
         padding: 1rem;
       }
@@ -37,8 +39,8 @@
 
       /* Overview list */
       .system-list {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(3, 390px);
         gap: 1rem;
         justify-content: center;
       }
@@ -46,7 +48,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        width: 260px;
+        width: 390px;
         padding: 1rem;
         border: 2px solid #ccc;
         border-radius: 8px;
@@ -80,16 +82,65 @@
   <body>
     <header>
       <h1>HIP 76954 DYNASTY</h1>
+      <select id="sortSelect">
+        <option value="population">Populace</option>
+        <option value="percentage">Procenta</option>
+        <option value="influence">Vliv</option>
+      </select>
     </header>
     <div class="layout">
       <aside>
+        <button id="homeBtn" class="nav-button">Hlavní strana</button>
         <button id="overviewBtn" class="nav-button">Přehled</button>
       </aside>
       <main id="content"></main>
     </div>
     <script>
       const overviewBtn = document.getElementById("overviewBtn");
+      const homeBtn = document.getElementById("homeBtn");
+      const sortSelect = document.getElementById("sortSelect");
       const content = document.getElementById("content");
+
+      let factionPresence = [];
+
+      function renderSystems() {
+        const sortBy = sortSelect.value;
+        const sorted = [...factionPresence];
+        if (sortBy === "population") {
+          sorted.sort(
+            (a, b) => (b.system_population || b.population || 0) - (a.system_population || a.population || 0),
+          );
+        } else if (sortBy === "percentage" || sortBy === "influence") {
+          sorted.sort((a, b) => (b.influence || 0) - (a.influence || 0));
+        }
+
+        const list = document.createElement("div");
+        list.className = "system-list";
+
+        sorted.forEach((p) => {
+          const btn = document.createElement("button");
+          btn.className = "system-button";
+
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "system-name";
+          nameSpan.textContent = p.system_name;
+
+          const inf = Math.round((p.influence || 0) * 100);
+          const circle = document.createElement("span");
+          circle.className = "inf-circle";
+          circle.textContent = `${inf}%`;
+          if (inf <= 30) circle.classList.add("low");
+          else if (inf <= 50) circle.classList.add("medium");
+          else circle.classList.add("high");
+
+          btn.appendChild(nameSpan);
+          btn.appendChild(circle);
+          list.appendChild(btn);
+        });
+
+        content.innerHTML = "";
+        content.appendChild(list);
+      }
 
       async function loadOverview() {
         content.innerHTML = "<p>Načítání...</p>";
@@ -105,39 +156,25 @@
             return;
           }
 
-          const list = document.createElement("div");
-          list.className = "system-list";
-
-          faction.faction_presence.forEach((p) => {
-            const btn = document.createElement("button");
-            btn.className = "system-button";
-
-            const nameSpan = document.createElement("span");
-            nameSpan.className = "system-name";
-            nameSpan.textContent = p.system_name;
-
-            const inf = Math.round(p.influence * 100);
-            const circle = document.createElement("span");
-            circle.className = "inf-circle";
-            circle.textContent = `${inf}%`;
-            if (inf <= 30) circle.classList.add("low");
-            else if (inf <= 50) circle.classList.add("medium");
-            else circle.classList.add("high");
-
-            btn.appendChild(nameSpan);
-            btn.appendChild(circle);
-            list.appendChild(btn);
-          });
-
-          content.innerHTML = "";
-          content.appendChild(list);
+          factionPresence = faction.faction_presence;
+          renderSystems();
         } catch (err) {
           console.error(err);
           content.textContent = "Nepodařilo se načíst data.";
         }
       }
 
+      function loadHome() {
+        content.innerHTML = "<p>Vítejte na hlavní stránce.</p>";
+      }
+
+      homeBtn.addEventListener("click", loadHome);
       overviewBtn.addEventListener("click", loadOverview);
+      sortSelect.addEventListener("change", () => {
+        if (factionPresence.length) renderSystems();
+      });
+
+      loadHome();
     </script>
-  </body>
+    </body>
 </html>
