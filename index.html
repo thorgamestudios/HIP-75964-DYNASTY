@@ -46,7 +46,6 @@
       </aside>
       <main id="content"></main>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const overviewBtn = document.getElementById("overviewBtn");
       const content = document.getElementById("content");
@@ -54,105 +53,31 @@
       async function loadOverview() {
         content.innerHTML = "<p>Načítání...</p>";
         try {
-          const factionName = "HIP 76954 DYNASTY";
-          const factionRes = await fetch(
-            `https://elitebgs.app/api/ebgs/v5/factions?factionName=${encodeURIComponent(factionName)}`,
+          const res = await fetch(
+            "https://elitebgs.app/api/ebgs/v5/factions?name=HIP%2076954%20DYNASTY",
           );
-          if (!factionRes.ok) throw new Error("Chyba API");
-          const factionData = await factionRes.json();
-          console.log("Faction response", factionData);
-          let presence = [];
-          if (factionData.docs && factionData.docs[0]) {
-            presence =
-              factionData.docs[0].faction_presence ||
-              factionData.docs[0].presence ||
-              [];
-            if (!Array.isArray(presence)) {
-              alert("Neočekávaný formát odpovědi API.");
-              console.error("Unexpected API response", factionData);
-              presence = [];
-            }
-          } else {
-            alert("Neočekávaný formát odpovědi API.");
-            console.error("Unexpected API response", factionData);
-          }
-
-          if (presence.length === 0) {
-            content.textContent = "Frakce není přítomna v žádném systému.";
+          if (!res.ok) throw new Error("Chyba API");
+          const data = await res.json();
+          const faction = data.docs && data.docs[0];
+          if (!faction || !Array.isArray(faction.faction_presence)) {
+            content.textContent = "Neočekávaný formát odpovědi API.";
             return;
           }
 
-          const settled = await Promise.allSettled(
-            presence.map(async (p) => {
-              const sysRes = await fetch(
-                `https://elitebgs.app/api/ebgs/v5/systems?name=${encodeURIComponent(p.system_name)}`,
-              );
-              if (!sysRes.ok) throw new Error("Chyba API");
-              const sysData = await sysRes.json();
-              return sysData.docs[0];
-            }),
-          );
-
-          const systems = settled
-            .filter((r) => r.status === "fulfilled" && r.value)
-            .map((r) => r.value);
+          const list = document.createElement("ul");
+          faction.faction_presence.forEach((p) => {
+            const li = document.createElement("li");
+            const inf = Math.round(p.influence * 100);
+            li.textContent = `${p.system_name} — ${inf}% — ${p.faction_state}`;
+            list.appendChild(li);
+          });
 
           content.innerHTML = "";
-          systems.forEach((sys) => {
-            const section = document.createElement("section");
-            const title = document.createElement("h2");
-            title.textContent = sys.name;
-            section.appendChild(title);
-
-            const canvas = document.createElement("canvas");
-            section.appendChild(canvas);
-
-            content.appendChild(section);
-
-            const labels = sys.factions.map(
-              (f) => `${f.name} ${(f.influence * 100).toFixed(1)}%`,
-            );
-            const dataValues = sys.factions.map((f) =>
-              (f.influence * 100).toFixed(1),
-            );
-            const colors = labels.map(
-              () =>
-                "#" +
-                Math.floor(Math.random() * 16777215)
-                  .toString(16)
-                  .padStart(6, "0"),
-            );
-
-            new Chart(canvas, {
-              type: "pie",
-              data: {
-                labels: labels,
-                datasets: [
-                  {
-                    data: dataValues,
-                    backgroundColor: colors,
-                  },
-                ],
-              },
-              options: {
-                plugins: {
-                  legend: {
-                    position: "bottom",
-                  },
-                },
-              },
-            });
-          });
-          } catch (err) {
-            console.error(err);
-            const details =
-              err?.message || (err?.status ? `HTTP ${err.status}` : "");
-            const hint = " Zkontrolujte název systému nebo síťové připojení.";
-            content.textContent =
-              `Nepodařilo se načíst data${
-                details ? `: ${details}` : ""
-              }.${hint}`;
-          }
+          content.appendChild(list);
+        } catch (err) {
+          console.error(err);
+          content.textContent = "Nepodařilo se načíst data.";
+        }
       }
 
       overviewBtn.addEventListener("click", loadOverview);
