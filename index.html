@@ -33,7 +33,7 @@
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
       }
       .nav-button {
         width: 100%;
@@ -469,6 +469,7 @@
       function loadHome() {
         currentView = "home";
         const wrapper = document.createElement("div");
+        wrapper.style.width = "100%";
         const intro = document.createElement("p");
         intro.textContent = "Vítejte na hlavní stránce.";
         wrapper.appendChild(intro);
