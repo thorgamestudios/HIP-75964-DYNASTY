@@ -2,7 +2,7 @@
 <html lang="cs">
   <head>
     <meta charset="UTF-8" />
-    <title>HIP 76954 DYNASTY</title>
+    <title>Impérium HIP 76954 DYNASTY</title>
     <style>
       body {
         margin: 0;
@@ -12,7 +12,7 @@
         background-color: #333;
         color: #fff;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         padding: 1rem;
       }
@@ -28,6 +28,9 @@
       main {
         flex-grow: 1;
         padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       .nav-button {
         width: 100%;
@@ -51,6 +54,11 @@
         grid-template-columns: repeat(3, 390px);
         gap: 1rem;
         justify-content: center;
+        margin: 0 auto;
+      }
+      #sortSelect {
+        display: block;
+        margin: 1rem auto;
       }
       .system-button {
         display: flex;
@@ -141,13 +149,13 @@
   </head>
   <body>
     <header>
-      <h1>HIP 76954 DYNASTY</h1>
-      <select id="sortSelect">
-        <option value="population">Populace</option>
-        <option value="percentage">Procenta</option>
-        <option value="influence">Vliv</option>
-      </select>
+      <h1>Impérium HIP 76954 DYNASTY</h1>
     </header>
+    <select id="sortSelect">
+      <option value="population">Populace</option>
+      <option value="percentage">Procenta</option>
+      <option value="influence">Vliv</option>
+    </select>
     <div class="layout">
       <aside>
         <button id="homeBtn" class="nav-button">Hlavní strana</button>
