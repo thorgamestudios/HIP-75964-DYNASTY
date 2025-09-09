@@ -83,14 +83,20 @@
           }
 
           const systems = await Promise.all(
-            presence.map(async (p) => {
-              const sysRes = await fetch(
-                `https://elitebgs.app/api/ebgs/v5/systems?name=${encodeURIComponent(p.system_name)}`,
-              );
-              if (!sysRes.ok) throw new Error("Chyba API");
-              const sysData = await sysRes.json();
-              return sysData.docs[0];
-            }),
+            presence
+              .map(
+                (p) =>
+                  p.system_name || p.systemName || p.system || p.name,
+              )
+              .filter(Boolean)
+              .map(async (systemName) => {
+                const sysRes = await fetch(
+                  `https://elitebgs.app/api/ebgs/v5/systems?name=${encodeURIComponent(systemName)}`,
+                );
+                if (!sysRes.ok) throw new Error("Chyba API");
+                const sysData = await sysRes.json();
+                return sysData.docs[0];
+              }),
           );
 
           content.innerHTML = "";
