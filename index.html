@@ -292,7 +292,7 @@
       let codexLocal = [];
       let powerPlayLocal = [];
 
-      async function loadGzJson(url) {
+      async function loadJson(url) {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Nelze načíst " + url);
         const buffer = await res.arrayBuffer();
@@ -309,11 +309,11 @@
         if (localDataLoaded) return;
         try {
           const [systems, stations, codex, bodies, powerPlay] = await Promise.all([
-            loadGzJson("systemsPopulated.json.gz"),
-            loadGzJson("stations.json.gz"),
-            loadGzJson("codex.json.gz"),
-            loadGzJson("bodies7days.json.gz"),
-            loadGzJson("powerPlay.json.gz"),
+            loadJson("systemsPopulated.json"),
+            loadJson("stations.json"),
+            loadJson("codex.json"),
+            loadJson("bodies7days.json"),
+            loadJson("powerPlay.json"),
           ]);
           systemsLocal = systems;
           stationsLocal = stations;
