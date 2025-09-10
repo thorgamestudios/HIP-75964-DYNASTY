@@ -309,6 +309,8 @@
       function stripEnumPrefix(value) {
         if (typeof value !== "string") return value;
         return value
+          .replace(/^\$/, "")
+          .replace(/;$/, "")
           .replace(/^system_security_/, "")
           .replace(/^government_/, "")
           .replace(/^economy_/, "");
@@ -709,6 +711,35 @@
             <tr><th>Poslední aktualizace dat</th><td>${system.updated_at ? new Date(system.updated_at).toLocaleString() : "—"}</td></tr>
           `;
           wrapper.appendChild(tbl);
+
+          let stations = [];
+          try {
+            const stationsRes = await fetch(
+              `https://elitebgs.app/api/ebgs/v5/stations?systemName=${encodeURIComponent(
+                name,
+              )}`,
+            );
+            if (stationsRes.ok) {
+              const stationsData = await stationsRes.json();
+              stations = stationsData.docs || [];
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          if (stations.length) {
+            const stTitle = document.createElement("h3");
+            stTitle.textContent = "Stanice";
+            wrapper.appendChild(stTitle);
+            const stList = document.createElement("ul");
+            stations.forEach((s) => {
+              const li = document.createElement("li");
+              const gov = stripEnumPrefix(s.government);
+              const econ = stripEnumPrefix(s.primary_economy || s.economy);
+              li.textContent = `${s.name} (${gov || "—"}, ${econ || "—"})`;
+              stList.appendChild(li);
+            });
+            wrapper.appendChild(stList);
+          }
 
           if (system.conflicts && system.conflicts.length) {
             const confTitle = document.createElement("h3");
