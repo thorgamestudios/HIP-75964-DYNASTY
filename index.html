@@ -77,6 +77,21 @@
       .system-table td:first-child {
         background-color: #000;
       }
+      .overview-tables {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .faction-table-wrapper {
+        border: 2px solid #00bfff;
+        padding: 0.5rem;
+      }
+      .faction-table-wrapper .system-table {
+        border-color: #00bfff;
+      }
+      .faction-input {
+        margin-bottom: 0.5rem;
+      }
       #sortSelect {
         color: #000;
       }
@@ -262,6 +277,7 @@
       let lastSortBy = "name";
       let sortAscending = true;
       let currentView = "home";
+      let overviewTableContainer;
 
       function addAnimatedClick(el, handler) {
         el.addEventListener("click", (e) => {
@@ -384,8 +400,87 @@
           tbl.appendChild(row);
         });
 
-        content.innerHTML = "";
-        content.appendChild(tbl);
+        overviewTableContainer.innerHTML = "";
+        overviewTableContainer.appendChild(tbl);
+      }
+
+      function renderFactionPresence(container, presence) {
+        const sorted = [...presence].sort((a, b) => (a.system_name || "").localeCompare(b.system_name || ""));
+        const tbl = document.createElement("table");
+        tbl.className = "system-table";
+        sorted.forEach((p) => {
+          const row = document.createElement("tr");
+
+          const nameCell = document.createElement("td");
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "system-name";
+          nameSpan.textContent = p.system_name;
+          nameSpan.addEventListener("click", () => {
+            window.location.href = `index.html?system=${encodeURIComponent(p.system_name)}`;
+          });
+          nameCell.appendChild(nameSpan);
+
+          const infCell = document.createElement("td");
+          const inf = Math.round((p.influence || 0) * 100);
+          const circle = document.createElement("span");
+          circle.className = "inf-circle";
+          circle.textContent = `${inf}%`;
+          if (inf <= 30) circle.classList.add("low");
+          else if (inf <= 50) circle.classList.add("medium");
+          else circle.classList.add("high");
+          infCell.appendChild(circle);
+
+          row.appendChild(nameCell);
+          row.appendChild(infCell);
+          tbl.appendChild(row);
+        });
+        container.innerHTML = "";
+        container.appendChild(tbl);
+      }
+
+      function createFactionTable() {
+        const wrap = document.createElement("div");
+        wrap.className = "faction-table-wrapper";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Frakce";
+        input.className = "faction-input";
+
+        const btn = document.createElement("button");
+        btn.textContent = "Aktualizovat";
+
+        const result = document.createElement("div");
+
+        async function update() {
+          const name = input.value.trim();
+          if (!name) {
+            result.innerHTML = "";
+            return;
+          }
+          result.innerHTML = "<p>Načítání...</p>";
+          try {
+            const res = await fetch(`https://elitebgs.app/api/ebgs/v5/factions?name=${encodeURIComponent(name)}`);
+            if (!res.ok) throw new Error("Chyba API");
+            const data = await res.json();
+            const faction = data.docs && data.docs[0];
+            if (!faction || !Array.isArray(faction.faction_presence)) {
+              result.textContent = "Frakce nenalezena.";
+              return;
+            }
+            renderFactionPresence(result, faction.faction_presence);
+          } catch (err) {
+            console.error(err);
+            result.textContent = "Nepodařilo se načíst data.";
+          }
+        }
+
+        btn.addEventListener("click", update);
+
+        wrap.appendChild(input);
+        wrap.appendChild(btn);
+        wrap.appendChild(result);
+        return wrap;
       }
 
       async function loadOverview() {
@@ -404,7 +499,16 @@
           }
 
           factionPresence = faction.faction_presence;
+          const wrapper = document.createElement("div");
+          wrapper.className = "overview-tables";
+          overviewTableContainer = document.createElement("div");
+          wrapper.appendChild(overviewTableContainer);
           renderSystems();
+          for (let i = 0; i < 3; i++) {
+            wrapper.appendChild(createFactionTable());
+          }
+          content.innerHTML = "";
+          content.appendChild(wrapper);
         } catch (err) {
           console.error(err);
           content.textContent = "Nepodařilo se načíst data.";
