@@ -114,6 +114,10 @@
         gap: 0.5rem;
         color: #000;
       }
+      tr.at-war {
+        outline: 2px solid #ff0000;
+        box-shadow: 0 0 8px #ff0000;
+      }
       .home-table {
         width: 100%;
         border: 2px solid #ff00ff;
@@ -310,6 +314,18 @@
           .replace(/^economy_/, "");
       }
 
+      function isAtWar(p) {
+        const states = [];
+        if (p.state) states.push(p.state);
+        if (Array.isArray(p.active_states))
+          states.push(...p.active_states.map((s) => s.state));
+        if (Array.isArray(p.pending_states))
+          states.push(...p.pending_states.map((s) => s.state));
+        if (Array.isArray(p.recovering_states))
+          states.push(...p.recovering_states.map((s) => s.state));
+        return states.some((s) => /war/i.test(s));
+      }
+
       function renderSystems() {
         const sortBy = lastSortBy;
         const sorted = [...factionPresence];
@@ -358,6 +374,7 @@
 
         sorted.forEach((p) => {
           const row = document.createElement("tr");
+          if (isAtWar(p)) row.classList.add("at-war");
 
           const addCell = document.createElement("td");
           const isHome = homeSystems.some((s) => s.system_name === p.system_name);
@@ -600,6 +617,7 @@
 
           homeSystems.forEach((p) => {
             const row = document.createElement("tr");
+            if (isAtWar(p)) row.classList.add("at-war");
 
             const nameTd = document.createElement("td");
             const nameSpan = document.createElement("span");
