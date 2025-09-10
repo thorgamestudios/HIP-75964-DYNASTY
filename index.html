@@ -258,6 +258,7 @@
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   </head>
   <body>
     <header>
@@ -282,6 +283,170 @@
       let sortAscending = true;
       let currentView = "home";
       let overviewTableContainer;
+
+      // Načítání lokálních datasetů
+      let localDataLoaded = false;
+      let systemsLocal = [];
+      let stationsLocal = [];
+      let bodiesLocal = [];
+      let codexLocal = [];
+      let powerPlayLocal = [];
+
+      async function loadGzJson(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Nelze načíst " + url);
+        const buffer = await res.arrayBuffer();
+        let text;
+        try {
+          text = pako.ungzip(new Uint8Array(buffer), { to: "string" });
+        } catch (e) {
+          text = new TextDecoder("utf-8").decode(buffer);
+        }
+        return JSON.parse(text);
+      }
+
+      async function loadLocalData() {
+        if (localDataLoaded) return;
+        try {
+          const [systems, stations, codex, bodies, powerPlay] = await Promise.all([
+            loadGzJson("systemsPopulated.json.gz"),
+            loadGzJson("stations.json.gz"),
+            loadGzJson("codex.json.gz"),
+            loadGzJson("bodies7days.json.gz"),
+            loadGzJson("powerPlay.json.gz"),
+          ]);
+          systemsLocal = systems;
+          stationsLocal = stations;
+          codexLocal = codex;
+          bodiesLocal = bodies;
+          powerPlayLocal = powerPlay;
+          localDataLoaded = true;
+        } catch (err) {
+          console.error("Chyba při načítání lokálních dat", err);
+        }
+      }
+
+      function stationSystemName(s) {
+        return (
+          s.system_name ||
+          s.systemName ||
+          s.system ||
+          (s.systemId && systemsLocal.find((sys) => sys.id === s.systemId)?.name)
+        );
+      }
+
+      function appendLocalDetails(name, wrapper) {
+        const sys =
+          systemsLocal.find(
+            (s) => s.name && s.name.toLowerCase() === name.toLowerCase()
+          ) || null;
+        if (sys) {
+          const tbl = document.createElement("table");
+          tbl.className = "detail-table";
+          const sysRows = [];
+          if (sys.allegiance)
+            sysRows.push(
+              `<tr><th>Allegiance (lokální)</th><td>${sys.allegiance}</td></tr>`
+            );
+          if (sys.government)
+            sysRows.push(
+              `<tr><th>Vláda (lokální)</th><td>${sys.government}</td></tr>`
+            );
+          if (sys.economy)
+            sysRows.push(
+              `<tr><th>Ekonomika (lokální)</th><td>${sys.economy}</td></tr>`
+            );
+          if (sys.population)
+            sysRows.push(
+              `<tr><th>Populace (lokální)</th><td>${sys.population.toLocaleString()}</td></tr>`
+            );
+          if (sysRows.length) {
+            const title = document.createElement("h3");
+            title.textContent = "Lokální data";
+            wrapper.appendChild(title);
+            tbl.innerHTML = sysRows.join("");
+            wrapper.appendChild(tbl);
+          }
+        }
+
+        const stationList = stationsLocal.filter(
+          (s) => (stationSystemName(s) || "").toLowerCase() === name.toLowerCase()
+        );
+        if (stationList.length) {
+          const stTitle = document.createElement("h3");
+          stTitle.textContent = "Stanice (lokální)";
+          wrapper.appendChild(stTitle);
+          const ul = document.createElement("ul");
+          stationList.forEach((s) => {
+            const li = document.createElement("li");
+            li.textContent = s.name || "";
+            ul.appendChild(li);
+          });
+          wrapper.appendChild(ul);
+        }
+
+        const bodyList = bodiesLocal.filter(
+          (b) =>
+            (b.system_name || b.systemName || b.system || "").toLowerCase() ===
+            name.toLowerCase()
+        );
+        if (bodyList.length) {
+          const bdTitle = document.createElement("h3");
+          bdTitle.textContent = "Tělesa";
+          wrapper.appendChild(bdTitle);
+          const ul = document.createElement("ul");
+          bodyList.slice(0, 20).forEach((b) => {
+            const li = document.createElement("li");
+            li.textContent = b.name || "";
+            ul.appendChild(li);
+          });
+          if (bodyList.length > 20) {
+            const li = document.createElement("li");
+            li.textContent = `... (${bodyList.length - 20} dalších)`;
+            ul.appendChild(li);
+          }
+          wrapper.appendChild(ul);
+        }
+
+        const codexList = codexLocal.filter(
+          (c) =>
+            (c.system_name || c.systemName || c.system || "").toLowerCase() ===
+            name.toLowerCase()
+        );
+        if (codexList.length) {
+          const codTitle = document.createElement("h3");
+          codTitle.textContent = "Codex";
+          wrapper.appendChild(codTitle);
+          const ul = document.createElement("ul");
+          codexList.forEach((c) => {
+            const li = document.createElement("li");
+            li.textContent = c.name || c.entry || JSON.stringify(c);
+            ul.appendChild(li);
+          });
+          wrapper.appendChild(ul);
+        }
+
+        const pp =
+          powerPlayLocal.find(
+            (p) =>
+              (p.system_name || p.systemName || p.system || "").toLowerCase() ===
+              name.toLowerCase()
+          ) || null;
+        if (pp) {
+          const ppTitle = document.createElement("h3");
+          ppTitle.textContent = "PowerPlay";
+          wrapper.appendChild(ppTitle);
+          const ppTbl = document.createElement("table");
+          ppTbl.className = "detail-table";
+          const ppRows = [];
+          if (pp.power)
+            ppRows.push(`<tr><th>Mocnost</th><td>${pp.power}</td></tr>`);
+          if (pp.state)
+            ppRows.push(`<tr><th>Stav</th><td>${pp.state}</td></tr>`);
+          ppTbl.innerHTML = ppRows.join("");
+          wrapper.appendChild(ppTbl);
+        }
+      }
 
       function addAnimatedClick(el, handler) {
         el.addEventListener("click", (e) => {
@@ -770,6 +935,9 @@
             });
             wrapper.appendChild(facList);
           }
+
+          await loadLocalData();
+          appendLocalDetails(name, wrapper);
 
           content.innerHTML = "";
           content.appendChild(wrapper);
