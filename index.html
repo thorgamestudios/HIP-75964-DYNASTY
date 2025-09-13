@@ -324,11 +324,6 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) =>
-            setDoc(doc(db, "users", userCredential.user.uid), {
-              email: userCredential.user.email,
-            }),
-          )
           .then(() => {
             loginScreen.style.display = "none";
             appDiv.style.display = "block";
