@@ -18,7 +18,7 @@ Pokud API odmítá CORS pro váš původ, zvažte hostování přes HTTPS nebo p
 
 ## Přihlášení
 
-Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). Konfigurace projektu pro `hip-75964-dynasty` je již vložena v souboru `index.html`. Nově registrovaní uživatelé se ukládají do kolekce `users` ve službě Firestore.
+Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). Konfigurace projektu pro `hip-75964-dynasty` je již vložena v souboru `index.html`. Nově registrovaní uživatelé jsou spravováni výhradně pomocí Firebase Authentication; žádná data se neukládají do Firestore.
 
 ## Lokální data
 
