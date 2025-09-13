@@ -6,7 +6,7 @@ U každého systému je zelené tlačítko **+** pro přidání mezi oblíbené 
 
 ## Přihlášení
 
-Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). V souboru `index.html` doplňte vlastní konfiguraci projektu. Nově registrovaní uživatelé se ukládají do kolekce `users` ve službě Firestore.
+Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). Konfigurace projektu pro `hip-75964-dynasty` je již vložena v souboru `index.html`. Nově registrovaní uživatelé se ukládají do kolekce `users` ve službě Firestore.
 
 ## Lokální data
 

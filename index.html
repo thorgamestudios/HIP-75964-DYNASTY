@@ -284,14 +284,20 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
       import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
       import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
 
       const firebaseConfig = {
-        apiKey: "REPLACE_ME",
-        authDomain: "REPLACE_ME",
-        projectId: "REPLACE_ME"
+        apiKey: "AIzaSyB2RmbWslhTrT7GgINEtvVV_JktnFM4zcI",
+        authDomain: "hip-75964-dynasty.firebaseapp.com",
+        projectId: "hip-75964-dynasty",
+        storageBucket: "hip-75964-dynasty.firebasestorage.app",
+        messagingSenderId: "898604209873",
+        appId: "1:898604209873:web:12619cad927eda4ab817f0",
+        measurementId: "G-PKW2JH45XS"
       };
 
       const appFb = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(appFb);
       const auth = getAuth(appFb);
       const db = getFirestore(appFb);
 
