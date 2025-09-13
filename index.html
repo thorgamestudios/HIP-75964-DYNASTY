@@ -803,7 +803,25 @@
           content.appendChild(wrapper);
         } catch (err) {
           console.error(err);
-          content.textContent = "Nepodařilo se načíst data.";
+          try {
+            await loadLocalData();
+            factionPresence = systemsLocal.map((s) => ({
+              system_name: s.name,
+              system_population: s.population,
+            }));
+            const wrapper = document.createElement("div");
+            wrapper.className = "overview-tables";
+            overviewTableContainer = document.createElement("div");
+            wrapper.appendChild(overviewTableContainer);
+            renderSystems();
+            for (let i = 0; i < 3; i++) {
+              wrapper.appendChild(createFactionTable(i));
+            }
+            content.innerHTML = "";
+            content.appendChild(wrapper);
+          } catch (err2) {
+            content.textContent = "Nepodařilo se načíst data.";
+          }
         }
       }
 
