@@ -782,7 +782,8 @@
           const res = await fetch(
             "https://elitebgs.app/api/ebgs/v5/factions?name=HIP%2076954%20DYNASTY",
           );
-          if (!res.ok) throw new Error("Chyba API");
+          if (!res.ok)
+            throw new Error(`API vrací ${res.status} ${res.statusText}`);
           const data = await res.json();
           const faction = data.docs && data.docs[0];
           if (!faction || !Array.isArray(faction.faction_presence)) {
@@ -802,8 +803,8 @@
           content.innerHTML = "";
           content.appendChild(wrapper);
         } catch (err) {
-          console.error(err);
-          content.textContent = "Nepodařilo se načíst data.";
+          console.error("Chyba při načítání přehledu:", err.message, err);
+          content.textContent = `Nepodařilo se načíst data: ${err.message}`;
         }
       }
 
