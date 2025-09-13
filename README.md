@@ -4,6 +4,10 @@ Nástěnka s informacemi o frakci **HIP 76954 DYNASTY**. Otevřete `index.html` 
 
 U každého systému je zelené tlačítko **+** pro přidání mezi oblíbené na hlavní stránce. Kliknutím na název systému se zobrazí detailní informace ve stejném okně.
 
+## Přihlášení
+
+Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). V souboru `index.html` doplňte vlastní konfiguraci projektu. Nově registrovaní uživatelé se ukládají do kolekce `users` ve službě Firestore.
+
 ## Lokální data
 
 Pro demonstraci je v repozitáři přiložena minimální sada souborů `*.json` (např. `systemsPopulated.json`, `stations.json` atd.).
