@@ -261,16 +261,79 @@
     <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   </head>
   <body>
-    <header>
-      <h1>Impérium HIP 76954 DYNASTY</h1>
-    </header>
-    <div class="layout">
-      <aside>
-        <button id="homeBtn" class="nav-button">Hlavní strana</button>
-        <button id="overviewBtn" class="nav-button">Přehled</button>
-      </aside>
-      <main id="content"></main>
+    <div id="login-screen">
+      <h2>Přihlášení</h2>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Heslo" />
+      <button id="loginBtn">Přihlásit</button>
+      <button id="registerBtn">Registrovat</button>
     </div>
+    <div id="app" style="display:none;">
+      <header>
+        <h1>Impérium HIP 76954 DYNASTY</h1>
+      </header>
+      <div class="layout">
+        <aside>
+          <button id="homeBtn" class="nav-button">Hlavní strana</button>
+          <button id="overviewBtn" class="nav-button">Přehled</button>
+        </aside>
+        <main id="content"></main>
+      </div>
+    </div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+      import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+      import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "REPLACE_ME",
+        authDomain: "REPLACE_ME",
+        projectId: "REPLACE_ME"
+      };
+
+      const appFb = initializeApp(firebaseConfig);
+      const auth = getAuth(appFb);
+      const db = getFirestore(appFb);
+
+      const loginScreen = document.getElementById("login-screen");
+      const appDiv = document.getElementById("app");
+      const loginBtn = document.getElementById("loginBtn");
+      const registerBtn = document.getElementById("registerBtn");
+
+      loginBtn.addEventListener("click", () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        signInWithEmailAndPassword(auth, email, password)
+          .then(() => {
+            loginScreen.style.display = "none";
+            appDiv.style.display = "block";
+          })
+          .catch((err) => alert(err.message));
+      });
+
+      registerBtn.addEventListener("click", () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) =>
+            setDoc(doc(db, "users", userCredential.user.uid), {
+              email: userCredential.user.email,
+            }),
+          )
+          .then(() => {
+            loginScreen.style.display = "none";
+            appDiv.style.display = "block";
+          })
+          .catch((err) => alert(err.message));
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loginScreen.style.display = "none";
+          appDiv.style.display = "block";
+        }
+      });
+    </script>
     <script>
       const overviewBtn = document.getElementById("overviewBtn");
       const homeBtn = document.getElementById("homeBtn");
