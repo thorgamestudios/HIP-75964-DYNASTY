@@ -283,7 +283,7 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
       import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-      import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+      import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
 
       const firebaseConfig = {
@@ -305,6 +305,9 @@
       const appDiv = document.getElementById("app");
       const loginBtn = document.getElementById("loginBtn");
       const registerBtn = document.getElementById("registerBtn");
+      const savedFactions = ["", "", ""];
+      window.savedFactions = savedFactions;
+      window.saveFactions = async () => {};
 
       loginBtn.addEventListener("click", () => {
         const email = document.getElementById("email").value;
@@ -333,10 +336,32 @@
           .catch((err) => alert(err.message));
       });
 
-      onAuthStateChanged(auth, (user) => {
+      onAuthStateChanged(auth, async (user) => {
         if (user) {
+          const userRef = doc(db, "users", user.uid);
+          try {
+            const snap = await getDoc(userRef);
+            if (snap.exists()) {
+              const data = snap.data();
+              const arr = Array.isArray(data.overviewFactions)
+                ? data.overviewFactions
+                : [];
+              for (let i = 0; i < savedFactions.length; i++) {
+                savedFactions[i] = arr[i] || "";
+              }
+            }
+          } catch (err) {
+            console.error("Nepodařilo se načíst uložené frakce", err);
+          }
           loginScreen.style.display = "none";
           appDiv.style.display = "block";
+          window.saveFactions = async (factions) => {
+            try {
+              await setDoc(userRef, { overviewFactions: factions }, { merge: true });
+            } catch (err) {
+              console.error("Nepodařilo se uložit frakce", err);
+            }
+          };
         }
       });
     </script>
@@ -346,6 +371,7 @@
       const content = document.getElementById("content");
       let sortSelect;
 
+      const savedFactions = window.savedFactions;
       let factionPresence = [];
       let homeSystems = [];
       let lastSortBy = "name";
@@ -691,7 +717,7 @@
         container.appendChild(tbl);
       }
 
-      function createFactionTable() {
+      function createFactionTable(idx) {
         const wrap = document.createElement("div");
         wrap.className = "faction-table-wrapper";
 
@@ -699,6 +725,9 @@
         input.type = "text";
         input.placeholder = "Frakce";
         input.className = "faction-input";
+        if (savedFactions[idx]) {
+          input.value = savedFactions[idx];
+        }
 
         const btn = document.createElement("button");
         btn.textContent = "Aktualizovat";
@@ -709,6 +738,8 @@
           const name = input.value.trim();
           if (!name) {
             result.innerHTML = "";
+            savedFactions[idx] = "";
+            window.saveFactions(savedFactions);
             return;
           }
           result.innerHTML = "<p>Načítání...</p>";
@@ -719,9 +750,13 @@
             const faction = data.docs && data.docs[0];
             if (!faction || !Array.isArray(faction.faction_presence)) {
               result.textContent = "Frakce nenalezena.";
+              savedFactions[idx] = "";
+              window.saveFactions(savedFactions);
               return;
             }
             renderFactionPresence(result, faction.faction_presence);
+            savedFactions[idx] = name;
+            window.saveFactions(savedFactions);
           } catch (err) {
             console.error(err);
             result.textContent = "Nepodařilo se načíst data.";
@@ -729,6 +764,10 @@
         }
 
         btn.addEventListener("click", update);
+
+        if (savedFactions[idx]) {
+          update();
+        }
 
         wrap.appendChild(input);
         wrap.appendChild(btn);
@@ -758,7 +797,7 @@
           wrapper.appendChild(overviewTableContainer);
           renderSystems();
           for (let i = 0; i < 3; i++) {
-            wrapper.appendChild(createFactionTable());
+            wrapper.appendChild(createFactionTable(i));
           }
           content.innerHTML = "";
           content.appendChild(wrapper);
