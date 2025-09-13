@@ -373,6 +373,7 @@
       let sortAscending = true;
       let currentView = "home";
       let overviewTableContainer;
+      const FACTION_NAME = "HIP 76954 Dynasty";
 
       // Načítání lokálních datasetů
       let localDataLoaded = false;
@@ -775,7 +776,9 @@
         content.innerHTML = "<p>Načítání...</p>";
         try {
           const res = await fetch(
-            "https://elitebgs.app/api/ebgs/v5/factions?name=HIP%2076954%20DYNASTY",
+            `https://elitebgs.app/api/ebgs/v5/factions?name=${encodeURIComponent(
+              FACTION_NAME,
+            )}`,
           );
           if (!res.ok)
             throw new Error(`API vrací ${res.status} ${res.statusText}`);
@@ -815,7 +818,9 @@
         container.innerHTML = "<p>Načítání statistik...</p>";
         try {
           const res = await fetch(
-            "https://elitebgs.app/api/ebgs/v5/factions?name=HIP%2076954%20DYNASTY",
+            `https://elitebgs.app/api/ebgs/v5/factions?name=${encodeURIComponent(
+              FACTION_NAME,
+            )}`,
           );
           if (!res.ok) throw new Error("Chyba API");
           const data = await res.json();
