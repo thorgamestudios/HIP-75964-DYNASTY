@@ -785,7 +785,15 @@
           if (!res.ok)
             throw new Error(`API vrací ${res.status} ${res.statusText}`);
           const data = await res.json();
-          const faction = data.docs && data.docs[0];
+          if (
+            !data ||
+            typeof data !== "object" ||
+            !Array.isArray(data.docs)
+          ) {
+            content.textContent = "Neočekávaný formát odpovědi API.";
+            return;
+          }
+          const faction = data.docs[0];
           if (!faction || !Array.isArray(faction.faction_presence)) {
             content.textContent = "Neočekávaný formát odpovědi API.";
             return;
