@@ -4,6 +4,18 @@ Nástěnka s informacemi o frakci **HIP 76954 DYNASTY**. Otevřete `index.html` 
 
 U každého systému je zelené tlačítko **+** pro přidání mezi oblíbené na hlavní stránce. Kliknutím na název systému se zobrazí detailní informace ve stejném okně.
 
+## Spuštění
+
+Aby fungovalo načítání dat z API, je potřeba stránku spouštět z webového serveru a nikoli přímo z `file://`.
+Nejjednodušší možnost je v kořenovém adresáři projektu spustit například vestavěný Python server:
+
+```bash
+python -m http.server 8000
+```
+
+Stránku pak otevřete v prohlížeči na adrese [http://localhost:8000/index.html](http://localhost:8000/index.html).
+Pokud API odmítá CORS pro váš původ, zvažte hostování přes HTTPS nebo použití vlastního proxy serveru.
+
 ## Přihlášení
 
 Před zobrazením stránky je vyžadováno přihlášení pomocí [Firebase Authentication](https://firebase.google.com/). Konfigurace projektu pro `hip-75964-dynasty` je již vložena v souboru `index.html`. Nově registrovaní uživatelé se ukládají do kolekce `users` ve službě Firestore.
