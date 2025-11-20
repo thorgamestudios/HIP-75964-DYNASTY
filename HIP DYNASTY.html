@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIP DYNASTY - Starfleet LCARS</title>
+    <style>
+        /* CSS Styly pro LCARS design */
+        :root {
+            --lcars-orange: #FF9900;
+            --lcars-blue: #0066CC;
+            --lcars-pink: #CC99CC;
+            --lcars-gold: #FFCC66;
+            --lcars-text: #CCCCFF;
+            --lcars-background: #000033;
+            --lcars-font: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--lcars-background);
+            color: var(--lcars-text);
+            font-family: var(--lcars-font);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--lcars-orange);
+            padding: 20px;
+            box-sizing: border-box;
+            border-right: 5px solid var(--lcars-pink);
+        }
+
+        .sidebar h1 {
+            color: var(--lcars-background);
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: block;
+            background-color: var(--lcars-blue);
+            color: var(--lcars-text);
+            padding: 15px 10px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 0 15px 15px 0;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: var(--lcars-gold);
+            color: var(--lcars-background);
+        }
+
+        .nav-link.active {
+            background-color: var(--lcars-pink);
+            color: var(--lcars-background);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active-section {
+            display: block;
+        }
+
+        .main-content h2 {
+            color: var(--lcars-gold);
+            border-bottom: 2px solid var(--lcars-blue);
+            padding-bottom: 10px;
+        }
+
+        .main-content p,
+        .main-content ul,
+        .main-content div {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .system-list li {
+            background-color: rgba(0, 102, 204, 0.2);
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid var(--lcars-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-btn {
+            background-color: #CC0000;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .pin-btn {
+            background-color: var(--lcars-blue);
+            color: var(--lcars-text);
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .pin-btn.pinned {
+            background-color: var(--lcars-gold);
+            color: var(--lcars-background);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            background-color: var(--lcars-background);
+            border: 1px solid var(--lcars-blue);
+            color: var(--lcars-text);
+            margin-right: 10px;
+        }
+
+        button.lcars-btn {
+            background-color: var(--lcars-blue);
+            color: var(--lcars-text);
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Nové styly pro stav systému */
+        .system-info {
+            font-size: 0.9em;
+            margin-left: 10px;
+            color: var(--lcars-text);
+        }
+
+        .state-war {
+            color: #FF3333;
+            /* Červená pro válku */
+            font-weight: bold;
+        }
+
+        .state-election {
+            color: #FFFF33;
+            /* Žlutá pro volby */
+            font-weight: bold;
+        }
+
+        .state-none {
+            color: #999999;
+            /* Šedá pro nic */
+        }
+
+        /* LCARS Detail View Styles */
+        .lcars-data-block {
+            border-left: 10px solid var(--lcars-orange);
+            border-top: 5px solid var(--lcars-orange);
+            border-radius: 20px 0 0 0;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 51, 0.5);
+        }
+
+        .lcars-section-title {
+            color: var(--lcars-orange);
+            font-size: 1.2em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .lcars-row {
+            display: flex;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(204, 153, 204, 0.2);
+            padding-bottom: 2px;
+        }
+
+        .lcars-label {
+            color: var(--lcars-pink);
+            width: 150px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .lcars-value {
+            color: var(--lcars-text);
+            flex-grow: 1;
+            font-weight: bold;
+        }
+
+        /* Home Page Stats & Pinned Items */
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background-color: rgba(0, 102, 204, 0.2);
+            border-top: 5px solid var(--lcars-pink);
+            border-bottom: 5px solid var(--lcars-blue);
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--lcars-gold);
+            display: block;
+        }
+
+        .stat-label {
+            text-transform: uppercase;
+            color: var(--lcars-text);
+            font-size: 0.9em;
+        }
+
+        .pinned-item {
+            background-color: rgba(255, 153, 0, 0.1);
+            border-left: 5px solid var(--lcars-orange);
+            margin-bottom: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .pinned-controls button {
+            background-color: var(--lcars-blue);
+            border: none;
+            color: var(--lcars-text);
+            padding: 5px 8px;
+            margin-left: 2px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .pinned-controls button:hover {
+            background-color: var(--lcars-gold);
+            color: var(--lcars-background);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Levý navigační sloupec -->
+        <aside class="sidebar">
+            <h1>HIP DYNASTY</h1>
+            <a href="#home" class="nav-link active" onclick="showSection('home', this)">Hlavní strana</a>
+            <a href="#systems" class="nav-link" onclick="showSection('systems', this)">Systémy</a>
+            <a href="#crew" class="nav-link" onclick="showSection('crew', this)">Posádka</a>
+            <a href="#log" class="nav-link" onclick="showSection('log', this)">Lodní deník</a>
+        </aside>
+
+        <!-- Hlavní obsah webu -->
+        <main class="main-content">
+            <div id="home" class="content-section active-section">
+                <h2>Status Frakce: HIP 76954 Dynasty</h2>
+
+                <!-- Statistiky -->
+                <div id="faction-stats" class="stats-container">
+                    <!-- Bude naplněno JS -->
+                </div>
+
+                <h3 style="color: var(--lcars-orange); border-bottom: 1px solid var(--lcars-orange); margin-top: 30px;">
+                    Připnuté Systémy</h3>
+                <div id="pinned-systems-list">
+                    <p>Žádné systémy nejsou připnuty.</p>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="lcars-btn"
+                        onclick="showSection('systems', document.querySelector('[href=\'#systems\']'))">Přejít do Správy
+                        Systémů</button>
+                </div>
+            </div>
+
+            <div id="systems" class="content-section">
+                <h2>Správa systémů (Elite Dangerous)</h2>
+
+                <!-- Seznam systémů -->
+                <div id="systems-list-view">
+                    <p>Ručně přidejte nebo odeberte systémy pod vlivem frakce HIP 76954 Dynasty.</p>
+
+                    <div>
+                        <input type="text" id="systemInput" placeholder="Zadejte název systému (např. Sol)">
+                        <button class="lcars-btn" onclick="addSystem()">Přidat systém</button>
+                        <button class="lcars-btn" onclick="fetchAllSystemData()"
+                            style="margin-left: 10px; background-color: var(--lcars-gold); color: var(--lcars-background);">Aktualizovat
+                            data z EDSM</button>
+                    </div>
+
+                    <ul id="systemList" class="system-list">
+                        <!-- Systémy budou přidány dynamicky zde -->
+                    </ul>
+                </div>
+
+                <!-- Detail systému (skrytý defaultně) -->
+                <div id="system-detail-view" style="display: none;">
+                    <button class="lcars-btn" onclick="hideSystemDetail()" style="margin-bottom: 20px;">&lt; Zpět na
+                        seznam</button>
+                    <div id="system-detail-content">
+                        <!-- Obsah detailu se načte dynamicky -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="crew" class="content-section">
+                <h2>Posádka</h2>
+                <p>Informace o posádce budou brzy k dispozici.</p>
+            </div>
+
+            <div id="log" class="content-section">
+                <h2>Lodní deník</h2>
+                <p>Záznamy komunikace a mise.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Funkce pro přepínání sekcí ---
+        function showSection(sectionId, element) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(sec => sec.classList.remove('active-section'));
+
+            document.getElementById(sectionId).classList.add('active-section');
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            if (element) {
+                element.classList.add('active');
+            }
+
+            if (sectionId === 'home') {
+                renderHome();
+            }
+        }
+
+        // --- Funkce pro správu seznamu systémů ---
+
+        const SYSTEMS_STORAGE_KEY = 'hipDynastySystems';
+        const FACTION_NAME = 'HIP 76954 Dynasty';
+
+        function getSystems() {
+            const systemsJson = localStorage.getItem(SYSTEMS_STORAGE_KEY);
+            let systems = systemsJson ? JSON.parse(systemsJson) : ['HIP 76954'];
+
+            // Migrace dat (staré formáty na nový objekt)
+            let needsSave = false;
+            systems = systems.map(s => {
+                if (typeof s === 'string') {
+                    needsSave = true;
+                    return { name: s, influence: null, state: null, isPinned: false, pinnedOrder: 0, controllingFaction: null };
+                }
+                // Migrace pro existující objekty bez nových polí
+                if (s.isPinned === undefined) { s.isPinned = false; needsSave = true; }
+                if (s.pinnedOrder === undefined) { s.pinnedOrder = 0; needsSave = true; }
+                if (s.controllingFaction === undefined) { s.controllingFaction = null; needsSave = true; }
+                return s;
+            });
+
+            if (needsSave) saveSystems(systems);
+            return systems;
+        }
+
+        function saveSystems(systems) {
+            localStorage.setItem(SYSTEMS_STORAGE_KEY, JSON.stringify(systems));
+        }
+
+        function renderHome() {
+            const systems = getSystems();
+
+            // 1. Statistiky
+            const totalTracked = systems.length;
+            const presentSystems = systems.filter(s => s.influence !== null && s.influence > 0).length;
+            const controlledSystems = systems.filter(s => s.controllingFaction && s.controllingFaction.toLowerCase() === FACTION_NAME.toLowerCase()).length;
+
+            const statsContainer = document.getElementById('faction-stats');
+            statsContainer.innerHTML = `
+                <div class="stat-box">
+                    <span class="stat-number">${totalTracked}</span>
+                    <span class="stat-label">Sledované Systémy</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">${presentSystems}</span>
+                    <span class="stat-label">Přítomnost Frakce</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">${controlledSystems}</span>
+                    <span class="stat-label">Ovládané Systémy</span>
+                </div>
+            `;
+
+            // 2. Připnuté systémy
+            const pinnedList = document.getElementById('pinned-systems-list');
+            const pinnedSystems = systems.filter(s => s.isPinned).sort((a, b) => a.pinnedOrder - b.pinnedOrder);
+
+            if (pinnedSystems.length === 0) {
+                pinnedList.innerHTML = '<p>Žádné systémy nejsou připnuty.</p>';
+            } else {
+                pinnedList.innerHTML = '';
+                pinnedSystems.forEach((sys, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'pinned-item';
+
+                    let infoText = '';
+                    if (sys.influence) infoText += `Vliv: ${(sys.influence * 100).toFixed(1)}%`;
+                    if (sys.state && sys.state !== 'None') infoText += ` | ${sys.state}`;
+
+                    div.innerHTML = `
+                        <div>
+                            <strong>${sys.name}</strong> <span style="font-size: 0.8em; color: var(--lcars-text); opacity: 0.8;">${infoText}</span>
+                        </div>
+                        <div class="pinned-controls">
+                            <button onclick="movePinned('${sys.name}', -1)" ${index === 0 ? 'disabled style="opacity:0.5"' : ''}>▲</button>
+                            <button onclick="movePinned('${sys.name}', 1)" ${index === pinnedSystems.length - 1 ? 'disabled style="opacity:0.5"' : ''}>▼</button>
+                            <button onclick="togglePin('${sys.name}')">Odepnout</button>
+                        </div>
+                    `;
+                    pinnedList.appendChild(div);
+                });
+            }
+        }
+
+        function togglePin(systemName) {
+            let systems = getSystems();
+            const sysIndex = systems.findIndex(s => s.name === systemName);
+            if (sysIndex !== -1) {
+                systems[sysIndex].isPinned = !systems[sysIndex].isPinned;
+
+                // Pokud připínáme, dáme ho na konec
+                if (systems[sysIndex].isPinned) {
+                    const maxOrder = systems.reduce((max, s) => s.isPinned ? Math.max(max, s.pinnedOrder || 0) : max, 0);
+                    systems[sysIndex].pinnedOrder = maxOrder + 1;
+                }
+
+                saveSystems(systems);
+                renderSystems();
+                renderHome();
+                // Pokud jsme v detailu, překreslíme ho pro aktualizaci tlačítka
+                if (document.getElementById('system-detail-view').style.display === 'block') {
+                    showSystemDetail(systemName);
+                }
+            }
+        }
+
+        function movePinned(systemName, direction) {
+            let systems = getSystems();
+            const pinnedSystems = systems.filter(s => s.isPinned).sort((a, b) => a.pinnedOrder - b.pinnedOrder);
+            const currentIndex = pinnedSystems.findIndex(s => s.name === systemName);
+
+            if (currentIndex === -1) return;
+
+            const targetIndex = currentIndex + direction;
+            if (targetIndex < 0 || targetIndex >= pinnedSystems.length) return;
+
+            const currentSys = pinnedSystems[currentIndex];
+            const targetSys = pinnedSystems[targetIndex];
+
+            // Swap orders
+            const tempOrder = currentSys.pinnedOrder;
+            currentSys.pinnedOrder = targetSys.pinnedOrder;
+            targetSys.pinnedOrder = tempOrder;
+
+            // Update in main array
+            const mainCurrentIndex = systems.findIndex(s => s.name === currentSys.name);
+            const mainTargetIndex = systems.findIndex(s => s.name === targetSys.name);
+
+            systems[mainCurrentIndex].pinnedOrder = currentSys.pinnedOrder;
+            systems[mainTargetIndex].pinnedOrder = targetSys.pinnedOrder;
+
+            saveSystems(systems);
+            renderHome();
+        }
+
+        function renderSystems() {
+            const systemListElement = document.getElementById('systemList');
+            if (!systemListElement) return;
+
+            systemListElement.innerHTML = '';
+            const systems = getSystems();
+
+            systems.forEach(system => {
+                const li = document.createElement('li');
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'flex';
+                contentDiv.style.alignItems = 'center';
+                contentDiv.style.width = '100%';
+
+                // Změna na interní odkaz
+                const nameLink = document.createElement('a');
+                nameLink.textContent = system.name;
+                nameLink.href = "#";
+                nameLink.onclick = (e) => {
+                    e.preventDefault();
+                    showSystemDetail(system.name);
+                };
+                nameLink.style.fontWeight = 'bold';
+                nameLink.style.marginRight = '15px';
+                nameLink.style.color = 'var(--lcars-text)';
+                nameLink.style.textDecoration = 'none';
+                nameLink.style.borderBottom = '1px dotted var(--lcars-gold)';
+
+                nameLink.onmouseover = function () { this.style.color = 'var(--lcars-gold)'; };
+                nameLink.onmouseout = function () { this.style.color = 'var(--lcars-text)'; };
+
+                contentDiv.appendChild(nameLink);
+
+                // Info span
+                if (system.influence !== null && system.influence !== undefined) {
+                    const infoSpan = document.createElement('span');
+                    infoSpan.className = 'system-info';
+                    let stateText = 'Nic';
+                    let stateClass = 'state-none';
+
+                    if (system.state) {
+                        const lowerState = system.state.toLowerCase();
+                        if (lowerState.includes('war') || lowerState.includes('civil war')) {
+                            stateText = 'Válka';
+                            stateClass = 'state-war';
+                        } else if (lowerState.includes('election')) {
+                            stateText = 'Volby';
+                            stateClass = 'state-election';
+                        }
+                    }
+                    infoSpan.innerHTML = `Vliv: ${(system.influence * 100).toFixed(1)}% | Stav: <span class="${stateClass}">${stateText}</span>`;
+                    contentDiv.appendChild(infoSpan);
+                }
+
+                li.appendChild(contentDiv);
+
+                // Pin Button
+                const pinBtn = document.createElement('button');
+                pinBtn.textContent = system.isPinned ? '★' : '☆';
+                pinBtn.className = `pin-btn ${system.isPinned ? 'pinned' : ''}`;
+                pinBtn.title = system.isPinned ? 'Odepnout z hlavní strany' : 'Připnout na hlavní stranu';
+                pinBtn.onclick = function () { togglePin(system.name); };
+                li.appendChild(pinBtn);
+
+                // Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Smazat';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = function () { removeSystem(system.name); };
+                li.appendChild(deleteBtn);
+
+                systemListElement.appendChild(li);
+            });
+        }
+
+        async function showSystemDetail(systemName) {
+            document.getElementById('systems-list-view').style.display = 'none';
+            const detailView = document.getElementById('system-detail-view');
+            detailView.style.display = 'block';
+
+            const contentDiv = document.getElementById('system-detail-content');
+            // Pokud už máme data, zobrazíme je hned, ale můžeme je i přenačíst. 
+            // Pro jednoduchost a rychlost zobrazíme "Načítám..." a stáhneme čerstvá.
+            contentDiv.innerHTML = '<p>Načítám data z EDSM...</p>';
+
+            const cleanSystemName = systemName.replace(/\s*\(.*?\)\s*/g, '').trim();
+            const systems = getSystems();
+            const storedSystem = systems.find(s => s.name === systemName);
+            const isPinned = storedSystem ? storedSystem.isPinned : false;
+
+            try {
+                const response = await fetch(`https://www.edsm.net/api-v1/system?systemName=${encodeURIComponent(cleanSystemName)}&showId=1&showCoordinates=1&showPermit=1&showInformation=1&showPrimaryStar=1`);
+                const systemData = await response.json();
+
+                const factionsResponse = await fetch(`https://www.edsm.net/api-system-v1/factions?systemName=${encodeURIComponent(cleanSystemName)}`);
+                const factionsData = await factionsResponse.json();
+
+                let html = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--lcars-orange); margin-bottom: 20px;">
+                        <h3 style="color: var(--lcars-gold); margin: 0; padding: 10px 0;">SYSTEM: ${systemData.name.toUpperCase()}</h3>
+                        <button class="lcars-btn" onclick="togglePin('${systemName}')" style="background-color: ${isPinned ? 'var(--lcars-gold)' : 'var(--lcars-blue)'}; color: ${isPinned ? 'var(--lcars-background)' : 'var(--lcars-text)'}">
+                            ${isPinned ? 'ODEPNOUT' : 'PŘIPNOUT'}
+                        </button>
+                    </div>
+                `;
+
+                const createRow = (label, value) => `
+                    <div class="lcars-row">
+                        <span class="lcars-label">${label}</span>
+                        <span class="lcars-value">${value}</span>
+                    </div>`;
+
+                // Základní info
+                html += `<div class="lcars-data-block">`;
+                html += `<span class="lcars-section-title">Základní Informace</span>`;
+
+                if (systemData.information) {
+                    html += createRow('Vláda', systemData.information.government || 'Neznámá');
+                    html += createRow('Allegiance', systemData.information.allegiance || 'Neznámá');
+                    html += createRow('Ekonomika', systemData.information.economy || 'Neznámá');
+                    html += createRow('Bezpečnost', systemData.information.security || 'Neznámá');
+                    html += createRow('Ovládá', systemData.information.faction || 'Neznámá');
+                }
+
+                if (systemData.coords) {
+                    html += createRow('Souřadnice', `[${systemData.coords.x}, ${systemData.coords.y}, ${systemData.coords.z}]`);
+                }
+                html += `</div>`;
+
+                // Astro Data
+                if (systemData.primaryStar) {
+                    html += `<div class="lcars-data-block">`;
+                    html += `<span class="lcars-section-title">Astro Data</span>`;
+                    html += createRow('Primární hvězda', systemData.primaryStar.name);
+                    html += createRow('Typ hvězdy', systemData.primaryStar.type);
+                    html += `</div>`;
+                }
+
+                // Info o naší frakci
+                if (factionsData && factionsData.factions) {
+                    const myFaction = factionsData.factions.find(f => f.name.toLowerCase() === FACTION_NAME.toLowerCase());
+                    if (myFaction) {
+                        html += `<div class="lcars-data-block" style="border-color: var(--lcars-gold);">`;
+                        html += `<span class="lcars-section-title" style="color: var(--lcars-gold);">${FACTION_NAME} STATUS</span>`;
+                        html += createRow('Vliv', `${(myFaction.influence * 100).toFixed(1)}%`);
+                        html += createRow('Stav', myFaction.state || 'Žádný');
+                        if (myFaction.isControlling) {
+                            html += createRow('Status', 'OVLÁDÁ SYSTÉM');
+                        }
+                        html += `</div>`;
+                    } else {
+                        html += `<div class="lcars-data-block" style="border-color: #CC0000;">`;
+                        html += `<p style="color: #CC0000;">Frakce ${FACTION_NAME} v tomto systému nenalezena.</p>`;
+                        html += `</div>`;
+                    }
+                }
+
+                contentDiv.innerHTML = html;
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: red;">Chyba při načítání dat: ${error.message}</p>`;
+            }
+        }
+
+        function hideSystemDetail() {
+            document.getElementById('system-detail-view').style.display = 'none';
+            document.getElementById('systems-list-view').style.display = 'block';
+        }
+
+        function addSystem() {
+            const inputElement = document.getElementById('systemInput');
+            const newSystemName = inputElement.value.trim();
+
+            if (newSystemName) {
+                const systems = getSystems();
+                if (!systems.some(s => s.name.toLowerCase() === newSystemName.toLowerCase())) {
+                    systems.push({
+                        name: newSystemName,
+                        influence: null,
+                        state: null,
+                        isPinned: false,
+                        pinnedOrder: 0,
+                        controllingFaction: null
+                    });
+                    saveSystems(systems);
+                    renderSystems();
+                    renderHome(); // Aktualizace počtu systémů
+                    inputElement.value = '';
+                } else {
+                    alert('Tento systém již v seznamu je.');
+                }
+            }
+        }
+
+        function removeSystem(systemName) {
+            let systems = getSystems();
+            systems = systems.filter(s => s.name !== systemName);
+            saveSystems(systems);
+            renderSystems();
+            renderHome();
+        }
+
+        async function fetchAllSystemData() {
+            const systems = getSystems();
+            const updateButtons = document.querySelectorAll('button[onclick="fetchAllSystemData()"]');
+            updateButtons.forEach(btn => btn.textContent = 'Aktualizuji...');
+
+            for (let i = 0; i < systems.length; i++) {
+                let systemName = systems[i].name;
+                const cleanSystemName = systemName.replace(/\s*\(.*?\)\s*/g, '').trim();
+                try {
+                    // 1. Získat info o systému (pro controllingFaction)
+                    const sysResponse = await fetch(`https://www.edsm.net/api-v1/system?systemName=${encodeURIComponent(cleanSystemName)}&showInformation=1`);
+                    const sysData = await sysResponse.json();
+
+                    if (sysData && sysData.information) {
+                        systems[i].controllingFaction = sysData.information.faction;
+                    }
+
+                    // 2. Získat info o frakcích (pro influence)
+                    const response = await fetch(`https://www.edsm.net/api-system-v1/factions?systemName=${encodeURIComponent(cleanSystemName)}`);
+                    const data = await response.json();
+
+                    if (data && data.factions) {
+                        const myFaction = data.factions.find(f => f.name.toLowerCase() === FACTION_NAME.toLowerCase());
+                        if (myFaction) {
+                            systems[i].influence = myFaction.influence;
+                            systems[i].state = myFaction.state;
+                        } else {
+                            systems[i].influence = 0;
+                            systems[i].state = 'Nenalezeno';
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Chyba při stahování dat pro ${cleanSystemName}:`, error);
+                }
+            }
+
+            saveSystems(systems);
+            renderSystems();
+            renderHome();
+            updateButtons.forEach(btn => btn.textContent = 'Aktualizovat data z EDSM');
+            alert('Aktualizace dokončena.');
+        }
+
+        // Načíst systémy při načtení stránky
+        document.addEventListener('DOMContentLoaded', (event) => {
+            renderSystems();
+            renderHome();
+            // Zajistí, že po načtení se zobrazí hlavní stránka
+            showSection('home', document.querySelector('[href="#home"]'));
+        });
+    </script>
+</body>
+
+</html>
